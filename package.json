@@ -5,7 +5,7 @@
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
-    "dev": "cross-env ENVIRONMENT=dev node src/app.js",
+    "dev": "cross-env ENVIRONMENT=dev nodemon",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -15,10 +15,13 @@
     "body-parser": "1.18.3",
     "dotenv": "7.0.0",
     "express": "4.16.4",
-    "nodemailer": "5.1.1"
+    "nodemailer": "5.1.1",
+    "passport": "0.4.0",
+    "passport-http-bearer": "1.0.1"
   },
   "devDependencies": {
     "cross-env": "^5.2.0",
+    "nodemon": "1.18.10",
     "semantic-git-commit-cli": "3.2.1"
   }
 }
