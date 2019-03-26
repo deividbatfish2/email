@@ -4,6 +4,7 @@ const Email = require('./email/Email')
 const sendEmail = require('./email/sendEmail')
 const express = require('express')
 const bodyparser = require('body-parser')
+const { check, validationResult } = require('express-validator/check');
 const dash = require('appmetrics-dash').attach()
 
 const passport = require('passport')
@@ -17,15 +18,28 @@ passport.use(new Strategy(bearerStrategy))
 app.use(bodyparser.urlencoded({extended: false}))
 app.use(bodyparser.json())
 
-app.post('/email', passport.authenticate('bearer', {session: false}), async (req, res) => {
-    const email = new Email(req.body)
-    try {
-        const emailSent = await sendEmail(email)
-        res.send({emailSent})
+app.post('/email', passport.authenticate('bearer', {session: false}), [
+    check('to').isEmail(),
+    check('subject').exists(),
+    check('text').isLength({max: 500, min:0}),
+    check('html').exists().isLength({max: 500, min:0})
+], async (req, res) => {
+
+    const errors = validationResult(req)
+
+    if(!errors.isEmpty()) {
+        res.status(422).send({errors: errors.array()})
     }
-    catch(e) {
-        console.error(e)
-        res.status(500).send({erro: "Unespected error"})
+    else {
+        const email = new Email(req.body)
+        try {
+            const emailSent = await sendEmail(email)
+            res.send({emailSent})
+        }
+        catch(e) {
+            console.error(e)
+            res.status(500).send({erro: "Unespected error"})
+        }
     }
 })
 
