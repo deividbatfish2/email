@@ -1,15 +1,13 @@
-const path = require('path')
-require('dotenv').config({path: path.resolve(__dirname, `./profile/${process.env.ENVIRONMENT}.env`)})
-const Email = require('./email/Email')
-const sendEmail = require('./email/sendEmail')
+const Email = require('../email/Email')
+const sendEmail = require('../email/sendEmail')
 const express = require('express')
 const bodyparser = require('body-parser')
 const { check, validationResult } = require('express-validator/check');
-const dash = require('appmetrics-dash').attach()
+process.env.ENVIRONMENT != 'test'? require('appmetrics-dash').attach(): null
 
 const passport = require('passport')
 const {Strategy} = require('passport-http-bearer')
-const bearerStrategy = require('./authentication/bearerStrategy')
+const bearerStrategy = require('../authentication/bearerStrategy')
 
 const app = express()
 
@@ -21,7 +19,7 @@ app.use(bodyparser.json())
 app.post('/email', passport.authenticate('bearer', {session: false}), [
     check('to').isEmail(),
     check('subject').exists(),
-    check('text').isLength({max: 500, min:0}),
+    check('text').exists().isLength({max: 500, min:0}),
     check('html').exists().isLength({max: 500, min:0})
 ], async (req, res) => {
 
@@ -43,4 +41,4 @@ app.post('/email', passport.authenticate('bearer', {session: false}), [
     }
 })
 
-app.listen(process.env.APP_PORT, () => {console.log(`UP in port ${process.env.APP_PORT}`)})
+module.exports = app
