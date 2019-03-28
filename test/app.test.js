@@ -2,9 +2,15 @@ const request = require('supertest')
 const path = require('path')
 require('dotenv').config({path: path.resolve(__dirname, `../src/profile/${process.env.ENVIRONMENT}.env`)})
 const app = require('../src/app/app')
+jest.mock('../src/publisher/publisher');
+const publisher = require('../src/publisher/publisher')
 
 describe('POST /email', () => {
     
+    beforeEach(() => {
+        publisher.mockImplementation((email) => email)
+    })
+
     it('O sistema deve enviar o email', done => {
         const email = {
             from: 'deivid@teste.com',
@@ -13,15 +19,12 @@ describe('POST /email', () => {
             text: 'Texto a ser enviado',
             html: '<b>Texto a ser enviado</b>'
         }
-        return request(app)
+        request(app)
             .post('/email')
             .set('Authorization', 'Bearer ' + process.env.TOKEN_AUTHORIZATION)
             .send(email)
             .then(response => {
-                expect(response.statusCode).toBe(200);
-                expect(response.body).toHaveProperty('emailSent')
-                expect(response.body).toHaveProperty('emailSent.messageId')
-                expect(response.body).toHaveProperty('emailSent.previewUrl')
+                expect(response.statusCode).toBe(200)
                 done()
             })
     }, 10000)
@@ -41,6 +44,26 @@ describe('POST /email', () => {
             .then(response => {
                 expect(response.statusCode).toBe(401);
             })
+    })
+
+    it('Em caso de exceção o app deve retornar um erro para o cliente', () => {
+        publisher.mockImplementation((email) => { throw new Error('Problema ao publicar na fila')})
+
+        const email = {
+            from: 'deivid@teste.com',
+            to: 'cliente@email.com',
+            subject: 'Assunto',
+            text: 'Texto a ser enviado',
+            html: '<b>Texto a ser enviado</b>'
+        }
+
+        return request(app)
+        .post('/email')
+        .set('Authorization', 'Bearer ' + process.env.TOKEN_AUTHORIZATION)
+        .send(email)
+        .then(response => {
+            expect(response.statusCode).toBe(500)
+        })
     })
 
     describe('O sistema deve validar campos obrigatorios e valores indevidos', () => {

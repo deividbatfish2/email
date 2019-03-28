@@ -6,12 +6,13 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "cross-env ENVIRONMENT=dev nodemon",
-    "test": "cross-env ENVIRONMENT=test jest"
+    "test": "cross-env ENVIRONMENT=test jest --coverage"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "amqplib": "0.5.3",
     "appmetrics-dash": "4.1.0",
     "body-parser": "1.18.3",
     "dotenv": "7.0.0",

@@ -1,5 +1,5 @@
 const Email = require('../email/Email')
-const sendEmail = require('../email/sendEmail')
+const publisher = require('../publisher/publisher')
 const express = require('express')
 const bodyparser = require('body-parser')
 const { check, validationResult } = require('express-validator/check');
@@ -21,7 +21,7 @@ app.post('/email', passport.authenticate('bearer', {session: false}), [
     check('subject').exists(),
     check('text').exists().isLength({max: 500, min:0}),
     check('html').exists().isLength({max: 500, min:0})
-], async (req, res) => {
+], (req, res) => {
 
     const errors = validationResult(req)
 
@@ -31,8 +31,8 @@ app.post('/email', passport.authenticate('bearer', {session: false}), [
     else {
         const email = new Email(req.body)
         try {
-            const emailSent = await sendEmail(email)
-            res.send({emailSent})
+            publisher(email)
+            res.send({mensagem: 'email salvo para envio'})
         }
         catch(e) {
             console.error(e)
